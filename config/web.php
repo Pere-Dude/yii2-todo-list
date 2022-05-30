@@ -17,7 +17,7 @@ $config = [
             'cookieValidationKey' => 'pI3Y9dY8bpw4aBrbUNBm5ZnPMH_nyQ54',
         ],
         'cache' => [
-            'class' => 'yii\caching\FileCache',
+            'class' => 'yii\caching\DummyCache',
         ],
         'user' => [
             'identityClass' => 'app\models\User',
@@ -43,14 +43,13 @@ $config = [
             ],
         ],
         'db' => $db,
-        /*
+
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
             ],
         ],
-        */
     ],
     'params' => $params,
 ];

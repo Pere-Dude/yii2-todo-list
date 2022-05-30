@@ -2,13 +2,18 @@
 
 namespace app\controllers;
 
+use app\models\Tasks;
 use Yii;
+use yii\base\BaseObject;
+use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\User;
+use yii\data\Pagination;
 
 class SiteController extends Controller
 {
@@ -61,7 +66,50 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $rows = Tasks::find();
+        $DataProvider = new ActiveDataProvider(
+            ['query' => Tasks::find(),
+                'pagination' => [
+                    'pageSize' => 20,
+                ],
+                'sort' => [
+                    'defaultOrder' => ['updated_at' => SORT_DESC]
+                ]
+            ]
+        );
+        // $searchModel = new tasksSearch();
+        $pagination = new Pagination([
+            'defaultPageSize' => 20, // количество записей на странице
+            'totalCount' => $rows->count(), // количество записей в таблице
+        ]);
+        $tasks_rows = $rows->offset($pagination->offset) // отступ постраничной навигации
+        ->limit($pagination->limit) // ограничение размера выборки
+        ->all();
+        return $this->render('index', ['rows' => $tasks_rows, 'pagination' => $pagination, 'DataProvider' => $DataProvider]);
+    }
+
+    public function actionInsert()
+    {
+        $model = new Tasks();
+        if ($model->load(Yii::$app->request->post())) {
+            $model->creator = Yii::$app->user->id;
+            $model->completion_date = strtotime($model->completion_date);
+            $model->save();
+            return $this->redirect(['/']);
+        } else {
+            return $this->renderAjax('insert', ['model' => $model]);
+        }
+    }
+
+    public function actionUpdate($id)
+    {
+        $model = Tasks::findOne($id);
+        if ($model->load(Yii::$app->request->post())) {
+            $model->completion_date = strtotime($model->completion_date);
+            $model->save();
+            return $this->redirect(['/']);
+        }
+        return $this->renderAjax('update', ['model' => $model]);
     }
 
     /**
@@ -125,4 +173,24 @@ class SiteController extends Controller
     {
         return $this->render('about');
     }
+
+    public function actionAddAdmin()
+    {
+        $model = User::find()->where(['username' => 'admin'])->one();
+        if (empty($model)) {
+            $user = new User();
+            $user->username = 'admin';
+            $user->name = 'Руководитель';
+            $user->surname = '';
+            $user->patronymic = '';
+            $user->admin = 1;
+            $user->setPassword('admin');
+            $user->generateAuthKey();
+            if ($user->save()) {
+                echo 'good';
+            }
+        }
+    }
+
+
 }

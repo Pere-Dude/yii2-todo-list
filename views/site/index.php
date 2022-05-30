@@ -2,52 +2,120 @@
 
 /** @var yii\web\View $this */
 
-$this->title = 'My Yii Application';
+use app\models\User;
+use yii\helpers\Url;
+use yii\widgets\ActiveForm;
+use yii\widgets\LinkPager;
+use \app\models\Tasks;
+use yii\grid\GridView;
+use yii\helpers\Html;
+use yii\bootstrap4\Modal;
+use yii\helpers\ArrayHelper;
+
+
+$this->title = 'ToDo List';
 ?>
-<div class="site-index">
+<?php if (Yii::$app->user->isGuest == true): ?>
+    <?php \app\components\Init::toLogin(); ?>
+<?php else: ?>
 
-    <div class="jumbotron text-center bg-transparent">
-        <h1 class="display-4">Congratulations!</h1>
+<h1><?= $this->title = 'ToDo List'; ?></h1>
 
-        <p class="lead">You have successfully created your Yii-powered application.</p>
+    <?= GridView::widget([
+        'dataProvider' => $DataProvider,
+        'filterModel' => $searchModel,
+        'summary' => false,
+        'columns' => [
+            [
+                'attribute' => 'header',
+                'value' => function ($data) {
+                    if ($data->completion_date < time() && $data->status !== 3) {
+                        return "<span class='grid-cell-red'>" . $data->header . "</span>";
+                    } else if ($data->status == 3) {
+                        return "<span class='grid-cell-green'>" . $data->header . "</span>";
+                    } else {
+                        return "<span class='grid-cell-gray'>" . $data->header . "</span>";
+                    }
 
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
+                },
+                'format' => 'html',
 
-    <div class="body-content">
+            ],
+            'priority',
+            [
+                'attribute' => 'completion_date',
+                'format' => ['datetime', 'php:d.m.Y'],
+            ],
+            [
+                'attribute' => 'responsible',
+                'value' => function ($data) {
+                    $user = User::find()->where("id = $data->responsible")->one();
+                    return $user['fullName'];
+                },
+                //'filter' => ArrayHelper::map(User::find()->all(), 'id', 'fullName'),
+                //'filterInputOptions' => ['class' => 'form-control form-control-sm']
+            ],
+            [
+                'attribute' => 'status',
+                'value' => function ($data) {
+                    switch ($data->status) {
+                        case 1:
+                            $status = 'к выполнению';
+                            break;
+                        case 2:
+                            $status = 'выполняется';
+                            break;
+                        case 3:
+                            $status = 'выполнена';
+                            break;
+                        case 4:
+                            $status = 'отменена';
+                            break;
+                        default:
+                            $status = 'к выполнению';
+                            break;
+                    }
+                    return $status;
+                }
+            ],
+            [
+                'label' => '',
+                'format' => 'raw',
+                'value' => function ($data) {
+                    return Html::button("Редактировать",
+                        ['value' => Url::to("/web/site/update?id=$data->id"),
+                            'id' => 'modalButtonUpdate' . $data->id,
+                            'class' => 'btn btn-primary not-button'
+                        ]
+                    );
+                }
+            ],
+        ],
+    ]); ?>
 
-        <div class="row">
-            <div class="col-lg-4">
-                <h2>Heading</h2>
+    <?php
+    Modal::begin([
+        'id' => 'modalUpdate',
+        'size' => 'modal-lg'
+    ]);
+    echo "<div id='modalContent1'></div>";
+    Modal::end();
+    ?>
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
+    <?=
+    Html::button("Создать задачу", ['value' => Url::to('/web/site/insert'), 'class' => 'btn btn-primary', 'id' => 'modalButton'])
+    ?>
+    <?php
+    Modal::begin([
+        'id' => 'modal',
+        'size' => 'modal-lg'
+    ]);
+    echo "<div id='modalContent'></div>";
+    Modal::end();
+    ?>
 
-                <p><a class="btn btn-outline-secondary" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
+<?php endif;
 
-                <p><a class="btn btn-outline-secondary" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-outline-secondary" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
-            </div>
-        </div>
-
-    </div>
-</div>
+//echo User::getRole();
+?>

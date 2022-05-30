@@ -64,9 +64,30 @@ a.desc:after {
     color: rgba(255, 255, 255, 0.5);
 }
 
-@media(max-width:767px) {
+.grid-cell-gray {
+    color: gray;
+}
+
+.grid-cell-red {
+    color: red;
+}
+
+.grid-cell-green {
+    color: green;
+}
+
+.user-name {
+    padding: 8px;
+    color: #ffffff;
+}
+
+.navbar-nav.right {
+    margin-left: auto;
+}
+
+@media (max-width: 767px) {
     .nav li > form > button.logout {
-        display:block;
+        display: block;
         text-align: left;
         width: 100%;
         padding: 10px 0;
