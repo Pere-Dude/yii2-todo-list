@@ -41,6 +41,12 @@ if ($admin) {
         <?= $form->field($model, 'responsible')->dropDownList($users) ?>
     <?php endif; ?>
 
+    <?php if (!$admin || $model->creator !== $user_id): ?>
+        <div class = 'input-hidden'>
+            <?= $form->field($model, 'completion_date')->input('date', ['required' => '', 'value' => date('Y-m-d', $model->completion_date)]) ?>
+        </div>
+    <?php endif; ?>
+
     <?= $form->field($model, 'status')->dropDownList(
         [
             '1' => 'к выполнению',

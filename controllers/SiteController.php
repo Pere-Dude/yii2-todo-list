@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Tasks;
+use app\models\TasksSearch;
 use Yii;
 use yii\base\BaseObject;
 use yii\data\ActiveDataProvider;
@@ -14,6 +15,7 @@ use app\models\LoginForm;
 use app\models\ContactForm;
 use app\models\User;
 use yii\data\Pagination;
+use yii\helpers\ArrayHelper;
 
 class SiteController extends Controller
 {
@@ -66,26 +68,18 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $rows = Tasks::find();
-        $DataProvider = new ActiveDataProvider(
-            ['query' => Tasks::find(),
-                'pagination' => [
-                    'pageSize' => 20,
-                ],
-                'sort' => [
-                    'defaultOrder' => ['updated_at' => SORT_DESC]
-                ]
-            ]
-        );
-        // $searchModel = new tasksSearch();
-        $pagination = new Pagination([
-            'defaultPageSize' => 20, // количество записей на странице
-            'totalCount' => $rows->count(), // количество записей в таблице
+        $user_id = Yii::$app->user->id;
+        $searchModel = new TasksSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->get());
+        $users = ArrayHelper::map(User::find()->all(), 'id', 'fullName');
+
+        $isAdmin = User::find()->where(['id' => $user_id, 'admin' => 1])->one();
+        return $this->render('index', [
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel,
+            'users' => $users,
+            'isAdmin' => $isAdmin
         ]);
-        $tasks_rows = $rows->offset($pagination->offset) // отступ постраничной навигации
-        ->limit($pagination->limit) // ограничение размера выборки
-        ->all();
-        return $this->render('index', ['rows' => $tasks_rows, 'pagination' => $pagination, 'DataProvider' => $DataProvider]);
     }
 
     public function actionInsert()
@@ -94,6 +88,8 @@ class SiteController extends Controller
         if ($model->load(Yii::$app->request->post())) {
             $model->creator = Yii::$app->user->id;
             $model->completion_date = strtotime($model->completion_date);
+            $model->created_at = time();
+            $model->updated_at = time();
             $model->save();
             return $this->redirect(['/']);
         } else {
@@ -105,7 +101,10 @@ class SiteController extends Controller
     {
         $model = Tasks::findOne($id);
         if ($model->load(Yii::$app->request->post())) {
-            $model->completion_date = strtotime($model->completion_date);
+            if ($model->completion_date !== '') {
+                $model->completion_date = strtotime($model->completion_date);
+            }
+            $model->updated_at = time();
             $model->save();
             return $this->redirect(['/']);
         }

@@ -36,14 +36,13 @@ AppAsset::register($this);
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav right'],
         'items' => [
-            '<li class="user-name">' .
-            Yii::$app->user->identity->getFullName()
-            . '(' . Yii::$app->user->identity->getRoleName() . ')'
-            . '</li>',
-
             Yii::$app->user->isGuest ? (
             ['label' => 'Login', 'url' => ['/site/login']]
             ) : (
+                    '<li class="user-name">' .
+            Yii::$app->user->identity->getFullName()
+            . '(' . Yii::$app->user->identity->getRoleName() . ')'
+            . '</li>' .
                 '<li>'
                 . Html::beginForm(['/site/logout'], 'post', ['class' => 'form-inline'])
                 . Html::submitButton(

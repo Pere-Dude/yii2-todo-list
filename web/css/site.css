@@ -1,3 +1,5 @@
+@import "boo";
+
 main > .container {
     padding: 70px 15px 20px;
 }
@@ -83,6 +85,34 @@ a.desc:after {
 
 .navbar-nav.right {
     margin-left: auto;
+}
+
+.pagination.pagination-sm li{
+    display: block;
+    width: 25px;
+    height: 35px;
+    padding: 3px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+    margin: 0 5px;
+    border-radius: 6px;
+}
+
+.pagination.pagination-sm li.active{
+    background: #f8f9fa;
+    border: none;
+}
+
+.pagination.pagination-sm li a{
+    text-decoration: none;
+}
+
+.pagination.pagination-sm li.active a{
+    color: #000000;
+}
+
+.input-hidden{
+    display: none;
 }
 
 @media (max-width: 767px) {

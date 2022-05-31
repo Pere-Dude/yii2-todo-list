@@ -11,20 +11,29 @@ use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\bootstrap4\Modal;
 use yii\helpers\ArrayHelper;
+use yii\data\Pagination;
 
 
 $this->title = 'ToDo List';
+$today_date = strtotime(date('Y-m-d'));
 ?>
 <?php if (Yii::$app->user->isGuest == true): ?>
     <?php \app\components\Init::toLogin(); ?>
 <?php else: ?>
 
-<h1><?= $this->title = 'ToDo List'; ?></h1>
+    <h1><?= $this->title = 'ToDo List'; ?></h1>
 
     <?= GridView::widget([
-        'dataProvider' => $DataProvider,
+        'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'summary' => false,
+        'pager' => [
+            'maxButtonCount' => 5,
+            'options' => [
+                'tag' => 'ul',
+                'class' => 'pagination pagination-sm',
+            ]
+        ],
         'columns' => [
             [
                 'attribute' => 'header',
@@ -39,12 +48,33 @@ $this->title = 'ToDo List';
 
                 },
                 'format' => 'html',
-
+                'filter' => false
             ],
-            'priority',
+            [
+                'attribute' => 'priority',
+                'value' => function ($data) {
+                    switch ($data->priority) {
+                        case 1:
+                            $priority = 'низкий';
+                            break;
+                        case 2:
+                            $priority = 'средний';
+                            break;
+                        case 3:
+                            $priority = 'высокий';
+                            break;
+                    }
+                    return $priority;
+                },
+                'filter' => false
+            ],
             [
                 'attribute' => 'completion_date',
                 'format' => ['datetime', 'php:d.m.Y'],
+                'filter' => [
+                    $today_date => 'на сегодня',
+
+                ],
             ],
             [
                 'attribute' => 'responsible',
@@ -52,8 +82,7 @@ $this->title = 'ToDo List';
                     $user = User::find()->where("id = $data->responsible")->one();
                     return $user['fullName'];
                 },
-                //'filter' => ArrayHelper::map(User::find()->all(), 'id', 'fullName'),
-                //'filterInputOptions' => ['class' => 'form-control form-control-sm']
+                'filter' => $isAdmin ? $users : false
             ],
             [
                 'attribute' => 'status',
@@ -76,7 +105,8 @@ $this->title = 'ToDo List';
                             break;
                     }
                     return $status;
-                }
+                },
+                'filter' => false
             ],
             [
                 'label' => '',
@@ -116,6 +146,4 @@ $this->title = 'ToDo List';
 
 
 <?php endif;
-
-//echo User::getRole();
 ?>

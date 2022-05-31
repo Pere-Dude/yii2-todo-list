@@ -11,8 +11,7 @@ $this->title = 'Добавить задачу';
 $user_id = Yii::$app->user->id;
 $admin = ArrayHelper::map(User::find()->where(['id' => $user_id, 'admin' => 1])->all(), 'id', 'fullName');
 if ($admin) {
-    $users = ArrayHelper::map(User::find()->andWhere(['admin' => !1])->all(), 'id', 'fullName');
-    $users = array_merge($users, $admin);
+    $users = ArrayHelper::map(User::find()->all(), 'id', 'fullName');
 } else {
     $users = ArrayHelper::map(User::find()->where(['id' => $user_id])->all(), 'id', 'fullName');
 }
