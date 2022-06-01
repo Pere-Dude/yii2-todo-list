@@ -123,7 +123,7 @@ class SiteController extends Controller
             return $this->goBack();
         }
 
-        $this->actionAddAdmin();
+        $this->actionAddUsers();
         $model->password = '';
         return $this->render('login', [
             'model' => $model,
@@ -142,10 +142,10 @@ class SiteController extends Controller
         return $this->goHome();
     }
 
-    public function actionAddAdmin()
+    public function actionAddUsers()
     {
-        $model = User::find()->where(['username' => 'admin'])->one();
-        if (empty($model)) {
+        $admin = User::find()->where(['username' => 'admin'])->one();
+        if (empty($admin)) {
             $user = new User();
             $user->username = 'admin';
             $user->name = 'Руководитель';
@@ -155,7 +155,22 @@ class SiteController extends Controller
             $user->setPassword('admin');
             $user->generateAuthKey();
             if ($user->save()) {
-                echo 'good';
+                echo "Руководитель создан<br>";
+            }
+        }
+
+        $user_test = User::find()->where(['username' => 'user'])->one();
+        if (empty($user_test)) {
+            $user = new User();
+            $user->username = 'user';
+            $user->name = 'Пользователь';
+            $user->surname = '';
+            $user->patronymic = '';
+            $user->admin = 0;
+            $user->setPassword('user');
+            $user->generateAuthKey();
+            if ($user->save()) {
+                echo "Пользователь создан<br>";
             }
         }
     }
