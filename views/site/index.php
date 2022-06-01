@@ -4,31 +4,50 @@
 
 use app\models\User;
 use yii\helpers\Url;
-use yii\widgets\ActiveForm;
-use yii\widgets\LinkPager;
-use \app\models\Tasks;
 use yii\grid\GridView;
 use yii\helpers\Html;
 use yii\bootstrap4\Modal;
-use yii\helpers\ArrayHelper;
-use yii\data\Pagination;
 
-
+$users = User::getUsersArray();
 $this->title = 'ToDo List';
 $today_date = strtotime(date('Y-m-d'));
 ?>
 <?php if (Yii::$app->user->isGuest == true): ?>
     <?php \app\components\Init::toLogin(); ?>
 <?php else: ?>
+    <h1><?= $this->title; ?></h1>
 
-    <h1><?= $this->title = 'ToDo List'; ?></h1>
+    <?= Html::beginForm('', 'get'); ?>
+    <div class="form-group-filter">
+        <?= Html::label('Диапазон дат', '-ID', ['class' => 'control-label']) ?>
+        <?= Html::dropDownList('date_filter', '',
+            [
+                'today' => 'На сегодня',
+                'week' => 'На неделю',
+                'future' => 'На будущее'
+            ],
+            ['class' => 'form-control',]); ?>
+        <?php if (User::isAdmin()): ?>
+            <?= Html::label('Ответственные', '', ['class' => 'control-label']) ?>
+            <?= Html::dropDownList('TasksSearch[responsible]', '', $users, ['class' => 'form-control']); ?>
+        <?php endif; ?>
+    </div>
+
+    <div class="form-group">
+        <?= Html::submitButton('Поиск', ['class' => 'btn btn-success']) ?>
+    </div>
+    <?php Html::endForm(); ?>
+
+    <?php if ($_GET["TasksSearch"] || $_GET["date_filter"]): ?>
+        <a href="/" class="btn btn-primary reset_filters">Сбросить фильтр</a>
+    <?php endif; ?>
+
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'summary' => false,
         'pager' => [
-            'maxButtonCount' => 5,
             'options' => [
                 'tag' => 'ul',
                 'class' => 'pagination pagination-sm',
@@ -38,7 +57,7 @@ $today_date = strtotime(date('Y-m-d'));
             [
                 'attribute' => 'header',
                 'value' => function ($data) {
-                    if ($data->completion_date < time() && $data->status !== 3) {
+                    if (($data->completion_date + (24 * 60 * 60)) < time() && $data->status !== 3) {
                         return "<span class='grid-cell-red'>" . $data->header . "</span>";
                     } else if ($data->status == 3) {
                         return "<span class='grid-cell-green'>" . $data->header . "</span>";
@@ -71,10 +90,7 @@ $today_date = strtotime(date('Y-m-d'));
             [
                 'attribute' => 'completion_date',
                 'format' => ['datetime', 'php:d.m.Y'],
-                'filter' => [
-                    $today_date => 'на сегодня',
-
-                ],
+                'filter' => false,
             ],
             [
                 'attribute' => 'responsible',
@@ -82,7 +98,7 @@ $today_date = strtotime(date('Y-m-d'));
                     $user = User::find()->where("id = $data->responsible")->one();
                     return $user['fullName'];
                 },
-                'filter' => $isAdmin ? $users : false
+                'filter' => false
             ],
             [
                 'attribute' => 'status',
@@ -133,7 +149,7 @@ $today_date = strtotime(date('Y-m-d'));
     ?>
 
     <?=
-    Html::button("Создать задачу", ['value' => Url::to('/web/site/insert'), 'class' => 'btn btn-primary', 'id' => 'modalButton'])
+    Html::button("Новая задача", ['value' => Url::to('/web/site/insert'), 'class' => 'btn btn-primary', 'id' => 'modalButton'])
     ?>
     <?php
     Modal::begin([

@@ -7,6 +7,7 @@ use yii\base\NotSupportedException;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
+use yii\helpers\ArrayHelper;
 
 /**
  * User model
@@ -167,5 +168,19 @@ class User extends ActiveRecord implements IdentityInterface
     public function getUsersList()
     {
         return $this->hasOne(workersInfo::className(), ['userid' => 'userid']);
+    }
+
+    public function getUsersArray()
+    {
+        return ArrayHelper::map(User::find()->all(), 'id', 'fullName');
+    }
+
+    public function isAdmin()
+    {
+        if (User::find()->where(['id' => Yii::$app->user->id, 'admin' => 1])->one()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

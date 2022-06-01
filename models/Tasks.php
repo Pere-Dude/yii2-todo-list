@@ -34,14 +34,8 @@ class Tasks extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['header', 'description'], 'safe'
-            ],
+            [['header', 'description', 'date_filter', 'date_filter'], 'safe'],
             [['completion_date', 'priority', 'status', 'responsible', 'creator'], 'required'],
-            /*[['header', 'completion_date', 'created_at', 'updated_at', 'priority', 'status', 'creator', 'responsible'], 'required'],
-            [['description'], 'string'],
-            [['completion_date', 'created_at', 'updated_at', 'priority', 'status', 'creator', 'responsible'], 'integer'],
-            [['header'], 'string', 'max' => 255],*/
         ];
     }
 

@@ -23,7 +23,7 @@ if ($admin) {
 
         <?php $form = ActiveForm::begin(); ?>
         <?= $form->field($model, 'header')->input('string', ['required' => '']); ?>
-        <?= $form->field($model, 'description')->input('string', ['required' => '']); ?>
+        <?= $form->field($model, 'description')->textarea('string', ['required' => '', 'rows' => '6']); ?>
 
         <?= $form->field($model, 'completion_date')->input('date', ['required' => '']) ?>
 

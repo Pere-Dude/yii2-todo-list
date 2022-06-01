@@ -9,10 +9,7 @@ use app\models\User;
 $this->title = 'Редактировать задачу';
 
 $user_id = Yii::$app->user->id;
-$admin = ArrayHelper::map(User::find()->where(['id' => $user_id, 'admin' => 1])->all(), 'id', 'fullName');
-if ($admin) {
-    //$users = ArrayHelper::map(User::find()->andWhere(['admin' => !1])->all(), 'id', 'fullName');
-    //$users = array_merge($users, $admin);
+if (User::isAdmin()) {
     $users = ArrayHelper::map(User::find()->all(), 'id', 'fullName');
 } else {
     $users = ArrayHelper::map(User::find()->where(['id' => $user_id])->all(), 'id', 'fullName');
@@ -24,9 +21,9 @@ if ($admin) {
 
 
     <?php $form = ActiveForm::begin(); ?>
-    <?php if ($admin || $model->creator == $user_id): ?>
+    <?php if (User::isAdmin() || $model->creator == $user_id): ?>
         <?= $form->field($model, 'header')->input('string', ['required' => '']); ?>
-        <?= $form->field($model, 'description')->input('string', ['required' => '']); ?>
+        <?= $form->field($model, 'description')->textarea('string', ['required' => '', 'rows' => '6']); ?>
 
         <?= $form->field($model, 'completion_date')->input('date', ['required' => '', 'value' => date('Y-m-d', $model->completion_date)]) ?>
 
@@ -41,10 +38,12 @@ if ($admin) {
         <?= $form->field($model, 'responsible')->dropDownList($users) ?>
     <?php endif; ?>
 
-    <?php if (!$admin || $model->creator !== $user_id): ?>
-        <div class = 'input-hidden'>
-            <?= $form->field($model, 'completion_date')->input('date', ['required' => '', 'value' => date('Y-m-d', $model->completion_date)]) ?>
-        </div>
+    <?php if ($model->creator !== $user_id): ?>
+        <?php if (!User::isAdmin()): ?>
+            <div class='input-hidden'>
+                <?= $form->field($model, 'completion_date')->input('date', ['required' => '', 'value' => date('Y-m-d', $model->completion_date)]) ?>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
 
     <?= $form->field($model, 'status')->dropDownList(

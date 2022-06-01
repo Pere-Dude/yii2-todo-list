@@ -2,9 +2,9 @@
 
 namespace app\models;
 
+use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Tasks;
 
 /**
  * TasksSearch represents the model behind the search form of `app\models\Tasks`.
@@ -41,14 +41,13 @@ class TasksSearch extends Tasks
     public function search($params)
     {
         $query = Tasks::find();
-
-        // add conditions that should always apply here
+        $today_date = strtotime(date('Y-m-d'));
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort'=>[
-                'defaultOrder'=>[
-                    'updated_at'=>SORT_DESC
+            'sort' => [
+                'defaultOrder' => [
+                    'updated_at' => SORT_DESC
                 ]
             ],
             'pagination' => [
@@ -79,6 +78,32 @@ class TasksSearch extends Tasks
 
         $query->andFilterWhere(['like', 'header', $this->header])
             ->andFilterWhere(['like', 'description', $this->description]);
+
+
+        //На сегодня
+        if ($_GET["date_filter"] == 'today') {
+            $query->andFilterWhere(['=', 'completion_date', $today_date]);
+            if (!User::isAdmin()) {
+                $query->andFilterWhere(['=', 'responsible', Yii::$app->user->id]);
+            }
+        }
+
+        //На неделю
+        if ($_GET["date_filter"] == 'week') {
+            $query->andFilterWhere(['>=', 'completion_date', $today_date]);
+            $query->andFilterWhere(['<', 'completion_date', time() + (7 * 24 * 60 * 60 + 1)]);
+            if (!User::isAdmin()) {
+                $query->andFilterWhere(['=', 'responsible', Yii::$app->user->id]);
+            }
+        }
+
+        //На будущее
+        if ($_GET["date_filter"] == 'future') {
+            $query->andFilterWhere(['>', 'completion_date', $today_date]);
+            if (!User::isAdmin()) {
+                $query->andFilterWhere(['=', 'responsible', Yii::$app->user->id]);
+            }
+        }
 
         return $dataProvider;
     }
