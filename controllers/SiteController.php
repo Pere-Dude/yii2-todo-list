@@ -10,7 +10,6 @@ use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
-use app\models\ContactForm;
 use app\models\User;
 use yii\helpers\ArrayHelper;
 
@@ -124,6 +123,7 @@ class SiteController extends Controller
             return $this->goBack();
         }
 
+        $this->actionAddAdmin();
         $model->password = '';
         return $this->render('login', [
             'model' => $model,
